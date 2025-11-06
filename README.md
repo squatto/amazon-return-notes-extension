@@ -2,6 +2,8 @@
 
 A lightweight Chrome extension that lets you **add personal notes** and track the status of your **Amazon returns** directly on the [Amazon Return History page](https://www.amazon.com/spr/returns/history).
 
+<img alt="Extension screenshot" src="screenshot.png" title="Extension screenshot" width="750" />
+
 ---
 
 ## ✨ Features
@@ -17,7 +19,7 @@ A lightweight Chrome extension that lets you **add personal notes** and track th
 
 ## 🧩 Installation (Developer Mode)
 
-1. **Download the ZIP** or clone this repository:
+1. [Download the latest release zip file here](https://github.com/squatto/amazon-return-notes-extension/releases/latest) or clone this repository:
    ```bash
    git clone https://github.com/squatto/amazon-return-notes-extension.git
    ```
@@ -115,7 +117,7 @@ amazon-return-notes/
 **Author:** Scott Carpenter  
 **Email:** scott@payforstay.com  
 **License:** MIT  
-**Version:** 1.0.0
+**Version:** 1.0.1
 
 ---
 

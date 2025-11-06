@@ -2,8 +2,9 @@
   "manifest_version": 3,
   "name": "Amazon Return Notes",
   "description": "Add notes and tracking to your Amazon return history.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Scott Carpenter (scott@payforstay.com)",
+  "homepage_url": "https://github.com/squatto/amazon-return-notes-extension",
   "permissions": [
     "storage"
   ],
