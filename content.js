@@ -220,8 +220,75 @@ function arnInjectStyles() {
       color: #555;
       margin-left: auto;
     }
+    .arn-filter-container {
+      margin: 8px 0 12px 0;
+      padding: 8px 12px;
+      background: #f7f7f7;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      display: inline-block;
+    }
+    .arn-filter-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+    }
   `;
   document.head.appendChild(style);
+}
+
+// Inject filter UI after the "N returns placed in past X months" row
+function arnInjectFilterUI() {
+  if (document.getElementById("arn-filter-ui")) return;
+
+  const countBold = Array.from(document.querySelectorAll("b")).find(
+    b => /\d+ returns/.test(b.textContent)
+  );
+  if (!countBold) return;
+
+  const countRow = countBold.closest("div.a-row");
+  if (!countRow) return;
+
+  const container = document.createElement("div");
+  container.id = "arn-filter-ui";
+  container.className = "arn-filter-container";
+
+  const label = document.createElement("label");
+  label.className = "arn-filter-label";
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.id = "arn-filter-checkbox";
+  checkbox.checked = false;
+
+  const text = document.createElement("span");
+  text.textContent = "Hide returns that have been dropped off";
+
+  label.appendChild(checkbox);
+  label.appendChild(text);
+  container.appendChild(label);
+
+  countRow.after(container);
+
+  checkbox.addEventListener("change", arnApplyFilter);
+}
+
+// Show/hide return boxes based on filter state
+function arnApplyFilter() {
+  const filterCheckbox = document.getElementById("arn-filter-checkbox");
+  const hideCompleted = filterCheckbox && filterCheckbox.checked;
+
+  document.querySelectorAll(".a-box-group.a-spacing-extra-large").forEach(box => {
+    if (!hideCompleted) {
+      box.style.display = "";
+      return;
+    }
+    const completionCheckbox = box.querySelector(".arn-notes-footer input[type='checkbox']");
+    box.style.display = (completionCheckbox && completionCheckbox.checked) ? "none" : "";
+  });
 }
 
 // Create UI for a single box
@@ -320,6 +387,7 @@ function arnProcessAllReturns(existingData) {
     const savedEntry = existingData[key] || {};
     arnCreateUiForBox(box, key, savedEntry, meta);
   });
+  arnApplyFilter();
 }
 
 // Watch for new content
@@ -337,6 +405,7 @@ function arnObserveMutations(existingData) {
 // Init
 function arnInit() {
   arnInjectStyles();
+  arnInjectFilterUI();
 
   chrome.storage.sync.get(null, data => {
     const existingData = data || {};
