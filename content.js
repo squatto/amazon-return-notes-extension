@@ -226,7 +226,14 @@ function arnInjectStyles() {
       background: #f7f7f7;
       border: 1px solid #ddd;
       border-radius: 4px;
-      display: inline-block;
+      display: inline-flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .arn-filter-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
     .arn-filter-label {
       display: flex;
@@ -235,6 +242,16 @@ function arnInjectStyles() {
       font-size: 13px;
       cursor: pointer;
       user-select: none;
+    }
+    #arn-sync-btn {
+      font-size: 13px;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+    .arn-sync-status {
+      font-size: 12px;
+      font-style: italic;
+      color: #555;
     }
   `;
   document.head.appendChild(style);
@@ -256,24 +273,82 @@ function arnInjectFilterUI() {
   container.id = "arn-filter-ui";
   container.className = "arn-filter-container";
 
-  const label = document.createElement("label");
-  label.className = "arn-filter-label";
+  // Sync button
+  const syncBtn = document.createElement("button");
+  syncBtn.id = "arn-sync-btn";
+  syncBtn.textContent = "Sync Dropped Off Checkboxes";
+  syncBtn.addEventListener("click", arnSyncDroppedOff);
 
-  const checkbox = document.createElement("input");
-  checkbox.type = "checkbox";
-  checkbox.id = "arn-filter-checkbox";
-  checkbox.checked = false;
+  const syncStatus = document.createElement("span");
+  syncStatus.id = "arn-sync-status";
+  syncStatus.className = "arn-sync-status";
 
-  const text = document.createElement("span");
-  text.textContent = "Hide returns that have been dropped off";
+  const syncRow = document.createElement("div");
+  syncRow.className = "arn-filter-row";
+  syncRow.appendChild(syncBtn);
+  syncRow.appendChild(syncStatus);
 
-  label.appendChild(checkbox);
-  label.appendChild(text);
-  container.appendChild(label);
+  // Hide filter checkbox
+  const filterLabel = document.createElement("label");
+  filterLabel.className = "arn-filter-label";
+
+  const filterCheckbox = document.createElement("input");
+  filterCheckbox.type = "checkbox";
+  filterCheckbox.id = "arn-filter-checkbox";
+  filterCheckbox.checked = false;
+
+  const filterText = document.createElement("span");
+  filterText.textContent = "Hide returns that have been dropped off";
+
+  filterLabel.appendChild(filterCheckbox);
+  filterLabel.appendChild(filterText);
+
+  container.appendChild(syncRow);
+  container.appendChild(filterLabel);
 
   countRow.after(container);
 
-  checkbox.addEventListener("change", arnApplyFilter);
+  filterCheckbox.addEventListener("change", arnApplyFilter);
+}
+
+// Check if a return status should trigger marking as dropped off
+function arnStatusTriggersDropoff(statusText) {
+  const s = statusText.toLowerCase().trim();
+  return (
+    s.startsWith("refund issued") ||
+    s.startsWith("refund complete") ||
+    s.startsWith("refund pending") ||
+    s.startsWith("refund processed") ||
+    s === "return in transit" ||
+    s === "return received"
+  );
+}
+
+// Sync "dropped off" checkboxes based on return status
+function arnSyncDroppedOff() {
+  const syncStatus = document.getElementById("arn-sync-status");
+  if (syncStatus) syncStatus.textContent = "";
+
+  let checked = 0;
+
+  document.querySelectorAll(".a-box-group.a-spacing-extra-large").forEach(box => {
+    const completionCheckbox = box.querySelector(".arn-notes-footer input[type='checkbox']");
+    if (!completionCheckbox) return;
+
+    const h4 = box.querySelector("div.a-section > h4");
+    if (!h4) return;
+
+    const statusText = h4.textContent.replace(/\s+/g, " ").trim();
+
+    if (!completionCheckbox.checked && arnStatusTriggersDropoff(statusText)) {
+      completionCheckbox.checked = true;
+      completionCheckbox.dispatchEvent(new Event("change"));
+      checked++;
+    }
+  });
+
+  alert(`Sync complete: ${checked} checked.`);
+
 }
 
 // Show/hide return boxes based on filter state
